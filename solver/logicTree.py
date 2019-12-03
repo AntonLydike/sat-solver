@@ -1,3 +1,5 @@
+from functools import reduce
+import operator
 from .exceptions import IllegalStateException
 
 
@@ -8,6 +10,22 @@ class LogicTreeNode:
 
     def evaluate(self, interpretation, variables):
         raise NotImplementedError
+
+    def getFreeVars(self):
+        return list(set(filter(None, reduce(operator.concat, [x.getFreeVars() for x in self.children]))))
+
+    def nodes(self):
+        return [self] + list(filter(None, reduce(operator.concat, [x.nodes() for x in self.children])))
+
+    def __str__(self):
+        children = ", ".join([str(x) for x in self.children])
+        return f"{self.action}({children})"
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __hash__(self):
+        return self.__str__().__hash__()
 
 
 class LogicTreeNode_Operator(LogicTreeNode):
@@ -23,6 +41,12 @@ class LogicTreeNode_Operator(LogicTreeNode):
             b = self.children[1].evaluate(inter, var)
             return not (a and (not b))
 
+    def __str__(self):
+        if (self.action == '\\lnot'):
+            return f"{self.action} {str(self.children[0])}"
+
+        return f"{str(self.children[0])} {self.action} {str(self.children[1])}"
+
 
 class LogicTreeNode_Atom(LogicTreeNode):
     def __init__(self, name):
@@ -30,6 +54,15 @@ class LogicTreeNode_Atom(LogicTreeNode):
 
     def evaluate(self, inter, var):
         return var.getValue(self.children[0])
+
+    def getFreeVars(self):
+        return self.children
+
+    def nodes(self):
+        return [self]
+
+    def __str__(self):
+        return self.children[0]
 
 
 class LogicTreeNode_Predicate(LogicTreeNode):
@@ -46,3 +79,6 @@ class LogicTreeNode_Brackets(LogicTreeNode):
             raise IllegalStateException(
                 "LogicTreeNode_Brackets expects to have exactly one child node!")
         return self.children[0].evaluate(inter, var)
+
+    def __str__(self):
+        return f"({str(self.children[0])})"

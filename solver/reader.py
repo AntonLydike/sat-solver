@@ -2,7 +2,7 @@ import re
 
 from .exceptions import IllegalStateException
 from .parserInput import ParserInput
-from .tree import *
+from .logicTree import *
 
 # (p \land \lnot q) \to (r \land s)
 
@@ -28,8 +28,6 @@ class ParseState:
     def __init__(self, parent):
         self.parent = parent
 
-    """Read the input string"""
-
     def read(self, input: ParserInput, prevRead=None):
         if input.isEmpty():
             if prevRead:
@@ -39,7 +37,7 @@ class ParseState:
 
         # we read an operator
         if input.nextChar() == '\\':
-            print("read operator at \n" + input.getErrMessage())
+            #print("read operator at \n" + input.getErrMessage())
             return ParseState_Operator(self).read(input, prevRead)
 
         # we read closing brackets
@@ -56,7 +54,7 @@ class ParseState:
 
         if input.nextChar() == '(':
             prevRead = ParseState_Brackets(self).read(input)
-            print("Read brackets at\n" + input.getErrMessage())
+            #print("Read brackets at\n" + input.getErrMessage())
             return ParseState(self).read(input, prevRead)
 
         match = input.matches(r"[A-z]+")
@@ -66,7 +64,7 @@ class ParseState:
 
         prevRead = LogicTreeNode_Atom(match.group(0))
 
-        print("read atom at \n" + input.getErrMessage())
+        #print("read atom at \n" + input.getErrMessage())
 
         input.consume(match.group(0))
 

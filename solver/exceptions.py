@@ -1,5 +1,8 @@
+from .parserInput import ParserInput
+
+
 class IllegalStateException(Exception):
-    def __init__(self, message: str, input=None):
+    def __init__(self, message: str, input: ParserInput = None):
         if (input == None):
             super().__init__(self, message)
         else:
